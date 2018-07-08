@@ -34,7 +34,7 @@ export default class TetrisContainer extends React.Component {
       y: 0,
       x: 3,
       rotation: 0,
-      piece: Z,
+      piece: O,
       lastMove: Date.now(),
       paused: false,
       finished: false
@@ -43,20 +43,22 @@ export default class TetrisContainer extends React.Component {
 
   componentDidMount() {
     document.body.addEventListener('keydown', e => {
-      if (e.keyCode === 40) {
-        this.moveDown()
-      }
-      if (e.keyCode === 39) {
-        this.moveRight()
-      }
-      if (e.keyCode === 37) {
-        this.moveLeft()
-      }
-      if (e.keyCode === 38) {
-        this.rotate()
-      }
       if (e.keyCode === 32) {
         this.pause()
+      }
+      if (!this.state.paused) {
+        if (e.keyCode === 40) {
+          this.moveDown()
+        }
+        if (e.keyCode === 39) {
+          this.moveRight()
+        }
+        if (e.keyCode === 37) {
+          this.moveLeft()
+        }
+        if (e.keyCode === 38) {
+          this.rotate()
+        }
       }
     })
     const interval = setInterval(() => this.main(), 1000)
@@ -64,12 +66,8 @@ export default class TetrisContainer extends React.Component {
   }
 
   componentDidUpdate(_prevProps, prevState) {
-    if (prevState.piece !== this.state.piece) {
-      return
-    }
     if (this.state.finished) {
       clearInterval(this.state.interval)
-      console.log('finished')
     }
   }
 
@@ -244,12 +242,14 @@ export default class TetrisContainer extends React.Component {
       this.setPiece()
       this.clearFilledLines()
       this.checkOver()
-      this.getNextPiece()
-      this.updateBoard()
+      if (!this.state.finished) {
+        this.getNextPiece()
+        this.updateBoard()
+      }
     }
   }
 
   render() {
-    return <TetrisView board={this.state.board} />
+    return <TetrisView {...this.state} />
   }
 }
