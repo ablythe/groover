@@ -1,0 +1,17 @@
+.square {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border-width: 1px;
+  padding: 2px;
+  border-style: solid;
+}
+.filled {
+  background-color: black;
+  border-color: blue;
+}
+
+.empty {
+  background-color: grey;
+  border-color: blue;
+}
