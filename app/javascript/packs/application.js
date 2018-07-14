@@ -8,7 +8,7 @@
 // layout file, like app/views/layouts/application.html.erb
 
 import WebpackerReact from 'webpacker-react'
-import TetrisContainer from './tetris.js'
+import TetrisContainer from './tetris/tetris.js'
 
 WebpackerReact.setup({
   TetrisContainer
