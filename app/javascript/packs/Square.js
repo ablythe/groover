@@ -1,14 +1,7 @@
 import React from 'react'
 
 const Square = props => {
-  const squareType = () => {
-    let className = 'square empty'
-    if (props.filled) {
-      className = 'square filled'
-    }
-    return className
-  }
-  return <span className={squareType()} />
+  return <span className={`square ${props.color}`} />
 }
 
 export default Square

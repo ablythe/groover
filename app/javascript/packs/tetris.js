@@ -1,33 +1,12 @@
 import React from 'react'
 import update from 'immutability-helper'
 import TetrisView from './TetrisView.js'
-import { O, T, I, L, S, Z } from './shapes.js'
+import { BoardSquare, defaultBoard } from './board.js'
+import { O, T, I, L, S, Z, J } from './shapes.js'
 
 export default class TetrisContainer extends React.Component {
   constructor(props) {
     super(props)
-    const defaultBoard = [
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false]
-    ]
 
     this.state = {
       board: defaultBoard,
@@ -61,7 +40,7 @@ export default class TetrisContainer extends React.Component {
         }
       }
     })
-    const interval = setInterval(() => this.main(), 1000)
+    const interval = setInterval(() => this.main(), 500)
     this.setState({ interval })
   }
 
@@ -76,11 +55,17 @@ export default class TetrisContainer extends React.Component {
   }
 
   rotate() {
-    const newRotation = (this.state.rotation + 1) % this.state.piece.length
+    const newRotation =
+      (this.state.rotation + 1) % this.state.piece.positions.length
     this.undraw()
     if (
-      this.collision(this.state.x, this.state.y, this.state.piece[newRotation])
+      this.collision(
+        this.state.x,
+        this.state.y,
+        this.state.piece.positions[newRotation]
+      )
     ) {
+      this.updateBoard()
       return false
     }
     this.setState({ rotation: newRotation })
@@ -100,51 +85,39 @@ export default class TetrisContainer extends React.Component {
 
   undraw() {
     let board = [...this.state.board]
-    this.state.piece[this.state.rotation].forEach(coordinates => {
+    this.state.piece.positions[this.state.rotation].forEach(coordinates => {
       const newX = this.state.x + coordinates[0]
       const newY = this.state.y + coordinates[1]
-      board[newY][newX] = false
+      board[newY][newX].filled = false
+      board[newY][newX].color = 'gray'
     })
     this.setState({ board })
   }
 
-  updateBoard(xOffset = 0, yOffset = 0) {
+  updateBoard(xOffset = 0, yOffset = 0, moved = false) {
     let board = [...this.state.board]
     const x = xOffset + this.state.x
     const y = yOffset + this.state.y
-    this.state.piece[this.state.rotation].forEach(coordinates => {
+    this.state.piece.positions[this.state.rotation].forEach(coordinates => {
       const newX = x + coordinates[0]
       const newY = y + coordinates[1]
-      board[newY][newX] = true
+      board[newY][newX].filled = true
+      board[newY][newX].color = this.state.piece.color
     })
-
-    this.setState({ board: board, x: x, y: y, lastMove: Date.now() })
+    const optionalState = moved ? { lastMove: Date.now() } : {}
+    this.setState({ board: board, x: x, y: y, ...optionalState })
   }
 
   setPiece() {
     let board = update(this.state.board, {})
-    this.state.piece[this.state.rotation].forEach(coordinates => {
+    this.state.piece.positions[this.state.rotation].forEach(coordinates => {
       const newX = this.state.x + coordinates[0]
       const newY = this.state.y + coordinates[1]
-      board[newY][newX] = true
+      board[newY][newX].filled = true
+      board[newY][newX].color = this.state.piece.color
     })
 
     this.setState({ board })
-  }
-
-  emptyRow() {
-    return [
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    ]
   }
 
   clearFilledLines() {
@@ -152,13 +125,19 @@ export default class TetrisContainer extends React.Component {
     let y = 0
     let linesToAdd = 0
     for (let line of board) {
-      if (line.every(square => square === true)) {
+      if (line.every(square => square.filled === true)) {
         let y2 = y
         while (y2 > 0) {
-          board[y2] = [...board[y2 - 1]]
+          let row = board[y2 - 1].map(square => {
+            return new BoardSquare(square.filled, square.color)
+          })
+          board[y2] = row
           y2--
         }
-        board[0].fill(false)
+        board[0].forEach(square => {
+          square.filled = false
+          square.color = 'gray'
+        })
         linesToAdd++
       }
       y++
@@ -169,14 +148,14 @@ export default class TetrisContainer extends React.Component {
   }
 
   getNextPiece() {
-    const pieces = [O, T, I, L, S, Z]
+    const pieces = [O, T, I, L, S, Z, J]
     const index = Math.floor(Math.random() * pieces.length)
     const newPiece = pieces[index]
     this.setState({ piece: newPiece, rotation: 0, x: 3, y: 0 })
   }
 
   checkOver() {
-    if (this.state.board[0].some(square => square === true)) {
+    if (this.state.board[0].some(square => square.filled === true)) {
       this.setState({ finished: true })
     }
   }
@@ -194,7 +173,7 @@ export default class TetrisContainer extends React.Component {
       if (newX < 0) {
         return true
       }
-      return this.state.board[newY][newX]
+      return this.state.board[newY][newX].filled
     })
   }
 
@@ -204,7 +183,7 @@ export default class TetrisContainer extends React.Component {
       !this.collision(
         this.state.x + 1,
         this.state.y,
-        this.state.piece[this.state.rotation]
+        this.state.piece.positions[this.state.rotation]
       )
     ) {
       this.updateBoard(1, 0)
@@ -219,7 +198,7 @@ export default class TetrisContainer extends React.Component {
       !this.collision(
         this.state.x - 1,
         this.state.y,
-        this.state.piece[this.state.rotation]
+        this.state.piece.positions[this.state.rotation]
       )
     ) {
       this.updateBoard(-1, 0)
@@ -234,10 +213,10 @@ export default class TetrisContainer extends React.Component {
       !this.collision(
         this.state.x,
         this.state.y + 1,
-        this.state.piece[this.state.rotation]
+        this.state.piece.positions[this.state.rotation]
       )
     ) {
-      this.updateBoard(0, 1)
+      this.updateBoard(0, 1, true)
     } else {
       this.setPiece()
       this.clearFilledLines()

@@ -13,8 +13,12 @@ export default class TetrisView extends React.Component {
   render() {
     return (
       <div id="gameboard">
-        {this.props.board.map(row => (
-          <div>{row.map(value => <Square filled={value} />)}</div>
+        {this.props.board.map((row, rowIndex) => (
+          <div key={rowIndex}>
+            {row.map((square, columnIndex) => (
+              <Square key={`${rowIndex}${columnIndex}`} color={square.color} />
+            ))}
+          </div>
         ))}
         {this.notificationBar()}
       </div>
