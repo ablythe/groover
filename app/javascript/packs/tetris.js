@@ -1,15 +1,13 @@
 import React from 'react'
 import update from 'immutability-helper'
 import TetrisView from './TetrisView.js'
-import { BoardSquare, defaultBoard } from './board.js'
+import { BoardSquare, DefaultBoard } from './board.js'
 import { O, T, I, L, S, Z, J } from './shapes.js'
 
 export default class TetrisContainer extends React.Component {
   constructor(props) {
     super(props)
-
-    this.state = {
-      board: defaultBoard,
+    this.startingState = {
       y: 0,
       x: 3,
       rotation: 0,
@@ -18,6 +16,12 @@ export default class TetrisContainer extends React.Component {
       paused: false,
       finished: false,
       score: 0
+    }
+
+    this.state = {
+      ...this.startingState,
+      board: new DefaultBoard().board,
+      inProgress: false
     }
   }
 
@@ -41,6 +45,10 @@ export default class TetrisContainer extends React.Component {
         }
       }
     })
+    this.setInterval()
+  }
+
+  setInterval() {
     const interval = setInterval(() => this.main(), 500)
     this.setState({ interval })
   }
@@ -54,9 +62,17 @@ export default class TetrisContainer extends React.Component {
   pause() {
     this.setState({ paused: !this.state.paused, lastMove: Date.now() })
   }
+  start() {
+    this.setState({
+      inProgress: true,
+      ...this.startingState,
+      board: new DefaultBoard().board
+    })
+    this.setInterval()
+  }
 
   main() {
-    if (this.state.paused || this.state.finished) {
+    if (this.state.paused || this.state.finished || !this.state.inProgress) {
       return
     }
     const now = Date.now()
@@ -243,6 +259,12 @@ export default class TetrisContainer extends React.Component {
   }
 
   render() {
-    return <TetrisView {...this.state} pause={() => this.pause()} />
+    return (
+      <TetrisView
+        {...this.state}
+        pause={() => this.pause()}
+        start={() => this.start()}
+      />
+    )
   }
 }
