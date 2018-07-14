@@ -12,16 +12,22 @@ export default class TetrisView extends React.Component {
   }
   render() {
     return (
-      <div id="gameboard">
-        {this.props.board.map((row, rowIndex) => (
-          <div key={rowIndex}>
-            {row.map((square, columnIndex) => (
-              <Square key={`${rowIndex}${columnIndex}`} color={square.color} />
-            ))}
-          </div>
-        ))}
-        {this.notificationBar()}
-      </div>
+      <React.Fragment>
+        <span id="score">Score: {this.props.score}</span>
+        <div id="gameboard">
+          {this.props.board.map((row, rowIndex) => (
+            <div key={rowIndex}>
+              {row.map((square, columnIndex) => (
+                <Square
+                  key={`${rowIndex}${columnIndex}`}
+                  color={square.color}
+                />
+              ))}
+            </div>
+          ))}
+          {this.notificationBar()}
+        </div>
+      </React.Fragment>
     )
   }
 }

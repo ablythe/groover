@@ -16,7 +16,8 @@ export default class TetrisContainer extends React.Component {
       piece: O,
       lastMove: Date.now(),
       paused: false,
-      finished: false
+      finished: false,
+      score: 0
     }
   }
 
@@ -123,7 +124,7 @@ export default class TetrisContainer extends React.Component {
   clearFilledLines() {
     let board = [...this.state.board]
     let y = 0
-    let linesToAdd = 0
+    let linesCleared = 0
     for (let line of board) {
       if (line.every(square => square.filled === true)) {
         let y2 = y
@@ -138,12 +139,25 @@ export default class TetrisContainer extends React.Component {
           square.filled = false
           square.color = 'gray'
         })
-        linesToAdd++
+        linesCleared++
       }
       y++
     }
-    if (linesToAdd > 0) {
-      this.setState({ board })
+    if (linesCleared > 0) {
+      const points = this.calculateScore(linesCleared)
+      this.setState({ board, score: this.state.score + points })
+    }
+  }
+
+  calculateScore(linesCleared) {
+    if (linesCleared === 1) {
+      return 40
+    } else if (linesCleared === 2) {
+      return 100
+    } else if (linesCleared === 3) {
+      return 300
+    } else {
+      return 1200
     }
   }
 
