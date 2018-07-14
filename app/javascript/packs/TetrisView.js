@@ -27,6 +27,7 @@ export default class TetrisView extends React.Component {
           ))}
           {this.notificationBar()}
         </div>
+        <button onClick={this.props.pause}>Pause</button>
       </React.Fragment>
     )
   }

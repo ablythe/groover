@@ -55,24 +55,6 @@ export default class TetrisContainer extends React.Component {
     this.setState({ paused: !this.state.paused, lastMove: Date.now() })
   }
 
-  rotate() {
-    const newRotation =
-      (this.state.rotation + 1) % this.state.piece.positions.length
-    this.undraw()
-    if (
-      this.collision(
-        this.state.x,
-        this.state.y,
-        this.state.piece.positions[newRotation]
-      )
-    ) {
-      this.updateBoard()
-      return false
-    }
-    this.setState({ rotation: newRotation })
-    this.updateBoard()
-  }
-
   main() {
     if (this.state.paused || this.state.finished) {
       return
@@ -242,7 +224,25 @@ export default class TetrisContainer extends React.Component {
     }
   }
 
+  rotate() {
+    const newRotation =
+      (this.state.rotation + 1) % this.state.piece.positions.length
+    this.undraw()
+    if (
+      this.collision(
+        this.state.x,
+        this.state.y,
+        this.state.piece.positions[newRotation]
+      )
+    ) {
+      this.updateBoard()
+      return false
+    }
+    this.setState({ rotation: newRotation })
+    this.updateBoard()
+  }
+
   render() {
-    return <TetrisView {...this.state} />
+    return <TetrisView {...this.state} pause={() => this.pause()} />
   }
 }
