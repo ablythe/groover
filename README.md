@@ -1,24 +1,12 @@
-# README
+To play tetris:
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+`Rails S`
 
-Things you may want to cover:
+Visit Localhost:3000
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Controls:
+Rotate: UP
+Left: left
+Right: Right
+Down: Down
+Pause: Spacebar
