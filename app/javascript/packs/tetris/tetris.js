@@ -2,6 +2,7 @@ import React from 'react'
 import update from 'immutability-helper'
 import TetrisView from './TetrisView.js'
 import { BoardSquare, DefaultBoard } from './board.js'
+import { demoMoveSeeder } from './demo.js'
 import { O, T, I, L, S, Z, J } from './shapes.js'
 
 export default class TetrisContainer extends React.Component {
@@ -12,11 +13,15 @@ export default class TetrisContainer extends React.Component {
       y: 0,
       x: 3,
       rotation: 0,
-      piece: O,
+      piece: T,
       lastMove: Date.now(),
       paused: false,
       finished: false,
-      score: 0
+      score: 0,
+      demo: false,
+      demoMoves: [],
+      demoTurn: [],
+      interval: null,
       speedIndex: 1
     }
 
@@ -63,6 +68,7 @@ export default class TetrisContainer extends React.Component {
   pause() {
     this.setState({ paused: !this.state.paused, lastMove: Date.now() })
   }
+
   start() {
     this.setState({
       inProgress: true,
@@ -71,6 +77,60 @@ export default class TetrisContainer extends React.Component {
     })
     this.setInterval(this.main)
   }
+
+  startDemo() {
+    this.setState(
+      {
+        ...this.startingState,
+        piece: demoMoveSeeder[0].piece,
+        demo: true,
+        demoMoves: demoMoveSeeder,
+        board: new DefaultBoard().board
+      },
+      () => {
+        this.setInterval(this.mainDemo)
+        this.demo()
+      }
+    )
+  }
+
+  demo() {
+    let moves = this.state.demoMoves[0].moves
+    this.setState({ demoMoves: this.state.demoMoves.slice(1), demoTurn: moves })
+  }
+
+  makeDemoMove() {
+    const move = this.state.demoTurn[0]
+    if (move) {
+      switch (move) {
+        case 'Down':
+          this.moveDown()
+          break
+        case 'Rotate':
+          this.rotate()
+          break
+        case 'Left':
+          this.moveLeft()
+          break
+        case 'Right':
+          this.moveRight()
+          break
+      }
+    } else {
+      this.moveDown()
+    }
+    this.setState({ demoTurn: this.state.demoTurn.slice(1) })
+  }
+
+  mainDemo = () => {
+    if (this.state.paused || this.state.finished) {
+      return
+    }
+    const now = Date.now()
+    const timeElapsed = now - this.state.lastMove
+    if (timeElapsed > 600 / this.speeds[this.state.speedIndex]) {
+      this.makeDemoMove()
+    }
   }
 
   main = () => {
@@ -178,6 +238,16 @@ export default class TetrisContainer extends React.Component {
   }
 
   getNextPiece() {
+    if (this.state.demo && this.state.demoMoves[0]) {
+      this.setState({
+        piece: this.state.demoMoves[0].piece,
+        rotation: 0,
+        x: 3,
+        y: 0
+      })
+      this.demo()
+      return
+    }
     const pieces = [O, T, I, L, S, Z, J]
     const index = Math.floor(Math.random() * pieces.length)
     const newPiece = pieces[index]
@@ -282,6 +352,7 @@ export default class TetrisContainer extends React.Component {
         {...this.state}
         pause={() => this.pause()}
         start={() => this.start()}
+        startDemo={() => this.startDemo()}
         increaseSpeed={() => this.increaseSpeed()}
         decreaseSpeed={() => this.decreaseSpeed()}
       />

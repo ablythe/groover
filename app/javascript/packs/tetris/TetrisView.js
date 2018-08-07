@@ -34,8 +34,9 @@ export default class TetrisView extends React.Component {
           ))}
           {this.notificationBar()}
         </div>
-        <button onClick={this.props.pause}>Pause</button>
         <button onClick={this.props.start}>Start</button>
+        <button onClick={this.props.startDemo}>Demo</button>
+        <button onClick={this.props.pause}>Pause</button>
         <div>
           Speed:{this.speed()}
           <button onClick={this.props.decreaseSpeed}>-</button>
