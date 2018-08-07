@@ -10,6 +10,13 @@ export default class TetrisView extends React.Component {
 
     return <span id="notificationBar">{message}</span>
   }
+  speed() {
+    if (this.props.speedIndex === 0) {
+      return '0.5x'
+    } else {
+      return `${this.props.speedIndex}x`
+    }
+  }
   render() {
     return (
       <React.Fragment>
@@ -29,6 +36,11 @@ export default class TetrisView extends React.Component {
         </div>
         <button onClick={this.props.pause}>Pause</button>
         <button onClick={this.props.start}>Start</button>
+        <div>
+          Speed:{this.speed()}
+          <button onClick={this.props.decreaseSpeed}>-</button>
+          <button onClick={this.props.increaseSpeed}>+</button>
+        </div>
       </React.Fragment>
     )
   }

@@ -7,6 +7,7 @@ import { O, T, I, L, S, Z, J } from './shapes.js'
 export default class TetrisContainer extends React.Component {
   constructor(props) {
     super(props)
+    this.speeds = [1, 2, 4, 6, 8, 10]
     this.startingState = {
       y: 0,
       x: 3,
@@ -16,6 +17,7 @@ export default class TetrisContainer extends React.Component {
       paused: false,
       finished: false,
       score: 0
+      speedIndex: 1
     }
 
     this.state = {
@@ -45,11 +47,10 @@ export default class TetrisContainer extends React.Component {
         }
       }
     })
-    this.setInterval()
   }
 
-  setInterval() {
-    const interval = setInterval(() => this.main(), 500)
+  setInterval(repeater) {
+    const interval = setInterval(() => repeater(), 20)
     this.setState({ interval })
   }
 
@@ -68,18 +69,35 @@ export default class TetrisContainer extends React.Component {
       ...this.startingState,
       board: new DefaultBoard().board
     })
-    this.setInterval()
+    this.setInterval(this.main)
+  }
   }
 
-  main() {
+  main = () => {
     if (this.state.paused || this.state.finished || !this.state.inProgress) {
       return
     }
     const now = Date.now()
     const timeElapsed = now - this.state.lastMove
-    if (timeElapsed > 1000) {
+    if (timeElapsed > 600 / this.speeds[this.state.speedIndex]) {
       this.moveDown()
     }
+  }
+
+  increaseSpeed() {
+    const speedIndex =
+      this.state.speedIndex === 5
+        ? this.state.speedIndex
+        : this.state.speedIndex + 1
+    this.setState({ speedIndex })
+  }
+
+  decreaseSpeed() {
+    const speedIndex =
+      this.state.speedIndex === 0
+        ? this.state.speedIndex
+        : this.state.speedIndex - 1
+    this.setState({ speedIndex })
   }
 
   undraw() {
@@ -264,6 +282,8 @@ export default class TetrisContainer extends React.Component {
         {...this.state}
         pause={() => this.pause()}
         start={() => this.start()}
+        increaseSpeed={() => this.increaseSpeed()}
+        decreaseSpeed={() => this.decreaseSpeed()}
       />
     )
   }
